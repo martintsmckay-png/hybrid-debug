@@ -209,3 +209,81 @@ window.debug = function () {
 setupEditor();
 renderXP();
 loadTasks();
+
+// --- CYBER SHAMAN BEADWORKS (STARTER INGREDIENTS) ---
+
+function initBeadworks() {
+  const canvas = document.getElementById('beadware-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  let width, height;
+  
+  // The 9 Main Virtues
+  const virtues = [
+    "Hope", "Faith", "Resolve", 
+    "Joy", "Love", "Peace", 
+    "Patience", "Acceptance", "Gratitude"
+  ];
+  
+  let beads = [];
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // Seed the cyber-grid with virtue nodes
+  for (let i = 0; i < 54; i++) { // 9 virtues * 6 sets
+    beads.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      virtue: virtues[i % virtues.length],
+      size: Math.random() * 1.5 + 0.5,
+      speedX: (Math.random() - 0.5) * 0.2,
+      speedY: (Math.random() - 0.5) * 0.2,
+      alpha: Math.random() * 0.4 + 0.1,
+      color: `rgba(0, 255, 180, ${Math.random() * 0.5 + 0.2})` // Cyberpunk cyan/green
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    
+    ctx.font = "10px monospace";
+    ctx.textAlign = "center";
+    
+    beads.forEach(bead => {
+      // Drift mechanics
+      bead.x += bead.speedX;
+      bead.y += bead.speedY;
+      
+      // Infinite holocron loop (wrap around edges)
+      if (bead.x > width) bead.x = 0;
+      if (bead.x < 0) bead.x = width;
+      if (bead.y > height) bead.y = 0;
+      if (bead.y < 0) bead.y = height;
+      
+      // Draw the core bead
+      ctx.beginPath();
+      ctx.arc(bead.x, bead.y, bead.size, 0, Math.PI * 2);
+      ctx.fillStyle = bead.color;
+      ctx.fill();
+      
+      // Draw the floating virtue text (Ghost Mode)
+      ctx.fillStyle = `rgba(120, 220, 255, ${bead.alpha})`;
+      ctx.fillText(bead.virtue, bead.x, bead.y - 8);
+    });
+    
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
+  console.log("🧿 Beadworks loaded. Virtues flowing.");
+}
+
+// Boot the canvas slightly after the DOM settles
+setTimeout(initBeadworks, 300);
+

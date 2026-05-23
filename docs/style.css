@@ -85,3 +85,21 @@ h1 {
   font-size: 0.9rem;
   opacity: 0.95;
 }
+
+/* --- CYBER SHAMAN BEADWORKS --- */
+#beadware-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+/* Ensure the wrapper doesn't block the background */
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
