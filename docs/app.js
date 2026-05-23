@@ -1,15 +1,76 @@
+const STORAGE_KEY_TASKS = "hybrid_debug_tasks";
+const STORAGE_KEY_XP    = "hybrid_debug_xp";
+const STORAGE_KEY_UNDO  = "hybrid_debug_undo";
+
 let tasks = [];
 let xp = { points: 0, level: 1 };
+let undoStack = [];
+
+// --- PERSISTENCE ---
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify(tasks));
+  localStorage.setItem(STORAGE_KEY_XP, JSON.stringify(xp));
+}
+
+function loadState() {
+  const savedTasks = localStorage.getItem(STORAGE_KEY_TASKS);
+  const savedXP    = localStorage.getItem(STORAGE_KEY_XP);
+
+  if (savedTasks) {
+    tasks = JSON.parse(savedTasks);
+  }
+  if (savedXP) {
+    xp = JSON.parse(savedXP);
+  }
+}
+
+// --- UNDO (single-step) ---
+
+function snapshotForUndo() {
+  const snapshot = {
+    tasks: JSON.stringify(tasks),
+    xp: JSON.stringify(xp),
+  };
+  localStorage.setItem(STORAGE_KEY_UNDO, JSON.stringify(snapshot));
+}
+
+function undoLast() {
+  const raw = localStorage.getItem(STORAGE_KEY_UNDO);
+  if (!raw) {
+    updateNarrative("No undo snapshot available.");
+    return;
+  }
+  try {
+    const snapshot = JSON.parse(raw);
+    tasks = JSON.parse(snapshot.tasks);
+    xp    = JSON.parse(snapshot.xp);
+    renderTasks();
+    renderXP();
+    saveState();
+    updateNarrative("Undo applied. State restored.");
+  } catch (e) {
+    console.error("Undo failed:", e);
+    updateNarrative("Undo failed. Snapshot corrupted.");
+  }
+}
+
+// --- LOAD INITIAL DATA ---
 
 async function loadTasks() {
   try {
-    const res = await fetch("tasks.json");
-    tasks = await res.json();
+    loadState();
+    if (tasks.length === 0) {
+      const res = await fetch("tasks.json");
+      tasks = await res.json();
+      updateNarrative("Seed tasks loaded. Persistence will remember changes.");
+    } else {
+      updateNarrative("Persistent state restored from storage.");
+    }
     renderTasks();
-    updateNarrative("System stable. Tasks loaded.");
   } catch (err) {
     console.error("Error loading tasks:", err);
-    updateNarrative("Error loading tasks. Check JSON.");
+    updateNarrative("Error loading tasks. Check JSON or storage.");
   }
 }
 
@@ -17,20 +78,26 @@ async function loadTasks() {
 
 function addTask(title) {
   if (!title.trim()) return;
+  snapshotForUndo();
   tasks.push({ title, completed: false });
   renderTasks();
+  saveState();
   updateNarrative(`Task added: "${title}"`);
 }
 
 function deleteTask(index) {
+  if (!tasks[index]) return;
+  snapshotForUndo();
   const [removed] = tasks.splice(index, 1);
   renderTasks();
+  saveState();
   updateNarrative(`Task removed: "${removed?.title || "Unknown"}"`);
 }
 
 function toggleComplete(index) {
   const task = tasks[index];
   if (!task) return;
+  snapshotForUndo();
   task.completed = !task.completed;
   if (task.completed) {
     gainXP(10);
@@ -39,7 +106,10 @@ function toggleComplete(index) {
     updateNarrative(`Task marked incomplete: "${task.title}"`);
   }
   renderTasks();
+  saveState();
 }
+
+// --- RENDERING ---
 
 function renderTasks() {
   const container = document.getElementById("task-container");
@@ -79,6 +149,7 @@ function gainXP(amount) {
     updateNarrative(`Level up! Now level ${xp.level}.`);
   }
   renderXP();
+  saveState();
 }
 
 function renderXP() {
@@ -112,7 +183,26 @@ function setupEditor() {
       input.value = "";
     }
   });
+
+  // Simple keyboard undo: Ctrl+Z
+  document.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.key.toLowerCase() === "z") {
+      undoLast();
+    }
+  });
 }
+
+// --- DEBUG HELPER ---
+
+window.debug = function () {
+  return {
+    threads: 3,
+    frequency: 432,
+    buffer: "sweetgrass",
+    tasks,
+    xp
+  };
+};
 
 // --- INIT ---
 
