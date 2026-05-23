@@ -351,3 +351,67 @@ function initOfflineGhostFiles() {
 // Boot the file system slightly after the DOM settles
 setTimeout(initOfflineGhostFiles, 400);
 
+
+// --- HOLY GHOST OFFLINE FILE SYSTEM ---
+function initOfflineGhostFiles() {
+  // 1. Inject the UI buttons dynamically
+  const editorPanel = document.getElementById("task-editor");
+  if (!editorPanel) return;
+
+  const ghostPanel = document.createElement("section");
+  ghostPanel.style.marginBottom = "15px";
+  ghostPanel.innerHTML = `
+    <button id="export-ghost-btn" style="background: #673ab7; color: white; padding: 6px 10px; border:none; border-radius:4px; margin-right: 5px; cursor: pointer; font-weight: bold;">💾 Export Ghost (.json)</button>
+    <button id="import-ghost-btn" style="background: #009688; color: white; padding: 6px 10px; border:none; border-radius:4px; cursor: pointer; font-weight: bold;">📂 Resurrect Ghost</button>
+    <input type="file" id="ghost-upload" accept=".json" style="display: none;" />
+  `;
+  
+  editorPanel.parentNode.insertBefore(ghostPanel, editorPanel);
+
+  // 2. Wire up the Export logic
+  document.getElementById("export-ghost-btn").addEventListener("click", () => {
+    const ghostData = { tasks, xp };
+    const blob = new Blob([JSON.stringify(ghostData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `holy-ghost-state-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    
+    URL.revokeObjectURL(url);
+    updateNarrative("Ghost state physically manifested as an offline file. 💾");
+  });
+
+  // 3. Wire up the Import logic
+  const uploadInput = document.getElementById("ghost-upload");
+  document.getElementById("import-ghost-btn").addEventListener("click", () => uploadInput.click());
+
+  uploadInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const resurrected = JSON.parse(event.target.result);
+        if (resurrected.tasks) tasks = resurrected.tasks;
+        if (resurrected.xp) xp = resurrected.xp;
+        
+        saveState(); // Update localStorage with the resurrected data
+        renderTasks();
+        renderXP();
+        updateNarrative("Ghost resurrected from offline file. 🧬");
+      } catch (err) {
+        console.error("Resurrection failed:", err);
+        updateNarrative("Resurrection failed. Corrupt artifact.");
+      }
+    };
+    reader.readAsText(file);
+    uploadInput.value = ""; // Reset input
+  });
+}
+
+// Boot the file system slightly after the DOM settles
+setTimeout(initOfflineGhostFiles, 400);
+
