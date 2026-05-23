@@ -1,18 +1,87 @@
 body {
-  font-family: sans-serif;
-  background: #111;
+  font-family: system-ui, sans-serif;
+  background: #0b0b0f;
   color: #eee;
   padding: 20px;
 }
 
 h1 {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+#xp-panel {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin-bottom: 15px;
+}
+
+#task-editor {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+#new-task-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #15151b;
+  color: #eee;
+}
+
+#add-task-btn {
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: none;
+  background: #4caf50;
+  color: #fff;
+  cursor: pointer;
+}
+
+#add-task-btn:hover {
+  background: #43a047;
 }
 
 .task {
-  padding: 12px;
-  margin-bottom: 10px;
-  background: #222;
+  padding: 10px;
+  margin-bottom: 8px;
+  background: #181820;
   border-left: 4px solid #4caf50;
   border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task span {
+  flex: 1;
+}
+
+.task button {
+  margin-left: 8px;
+  padding: 4px 8px;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.task button.complete-btn {
+  background: #2196f3;
+  color: #fff;
+}
+
+.task button.delete-btn {
+  background: #f44336;
+  color: #fff;
+}
+
+#narrative-panel {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 4px;
+  background: radial-gradient(circle at top left, #283593, #0b0b0f);
+  font-size: 0.9rem;
+  opacity: 0.95;
 }
