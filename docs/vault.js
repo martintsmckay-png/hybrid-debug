@@ -193,3 +193,23 @@ resonancePanel.appendChild(
 
 document.body.appendChild(resonancePanel);
 
+
+// ------------------------------------------------------
+// PANEL 4: PERCHANCE PORTAL
+// ------------------------------------------------------
+const perchancePanel = createPanel("🪟 Perchance Portal");
+perchancePanel.style.top = "500px";
+
+perchancePanel.appendChild(
+  createButton("🔮 Open Perchance Chat", "#CBA3FF", "ghost", () => {
+    window.open(
+      "https://perchance.org/YOUR-PERCHANCE-URL",
+      "perchancePopup",
+      "width=480,height=720,resizable=yes"
+    );
+    console.log("[Vault] Perchance portal opened.");
+  })
+);
+
+document.body.appendChild(perchancePanel);
+
