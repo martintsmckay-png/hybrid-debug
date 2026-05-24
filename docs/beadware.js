@@ -20,7 +20,7 @@
     beads.push({
       x: (i / beadCount) * window.innerWidth,
       y: 40 + Math.random() * 60,
-      baseR: 3 + Math.random() * 4, // Store the original radius
+      baseR: 3 + Math.random() * 4,
       phase: Math.random() * Math.PI * 2,
       speed: 0.01 + Math.random() * 0.02
     });
@@ -30,11 +30,11 @@
     const rect = canvas.getBoundingClientRect();
     ctx.clearRect(0, 0, rect.width, rect.height);
 
-    // Pull the real-time audio pulse from the transcendence engine
     const syncPulse = window.sweetgrass ? window.sweetgrass.getSyncData() : 0;
+    const isInverted = window.sweetgrass ? window.sweetgrass.isInverted : false;
 
-    // Draw the soft thread line, rippling with the audio wave
-    ctx.strokeStyle = "rgba(255, 215, 130, 0.25)";
+    // Shift thread color based on mode
+    ctx.strokeStyle = isInverted ? "rgba(0, 255, 255, 0.3)" : "rgba(255, 215, 130, 0.25)";
     ctx.lineWidth = 2;
     ctx.beginPath();
     beads.forEach((b, i) => {
@@ -44,22 +44,28 @@
     });
     ctx.stroke();
 
-    // Draw the beads, pulsing brightness and radius to the frequency
     beads.forEach((b) => {
-      const y = b.y + Math.sin(b.phase + (syncPulse * 4)) * 8;
+      // Invert the physical wave direction for visual flair
+      const pulseImpact = isInverted ? -(syncPulse * 4) : (syncPulse * 4);
+      const y = b.y + Math.sin(b.phase + pulseImpact) * 8;
       
-      // The bead physically breathes with the 432Hz sine wave
       const dynamicR = b.baseR + (syncPulse * 3); 
       const safeR = Math.max(0.1, dynamicR); 
-
-      const gradient = ctx.createRadialGradient(b.x, y, 0, b.x, y, safeR * 2);
-      
-      // Core flashes slightly brighter when the wave hits a peak
       const alphaCore = 0.85 + (syncPulse * 0.15); 
       
-      gradient.addColorStop(0, `rgba(255, 230, 180, ${alphaCore})`);
-      gradient.addColorStop(0.4, "rgba(255, 200, 120, 0.7)");
-      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      const gradient = ctx.createRadialGradient(b.x, y, 0, b.x, y, safeR * 2);
+      
+      if (isInverted) {
+        // Deep Space / Cyan Rendering
+        gradient.addColorStop(0, `rgba(0, 255, 255, ${alphaCore})`);
+        gradient.addColorStop(0.4, "rgba(0, 100, 255, 0.7)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      } else {
+        // Radiant Gold Rendering
+        gradient.addColorStop(0, `rgba(255, 230, 180, ${alphaCore})`);
+        gradient.addColorStop(0.4, "rgba(255, 200, 120, 0.7)");
+        gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+      }
 
       ctx.fillStyle = gradient;
       ctx.beginPath();
